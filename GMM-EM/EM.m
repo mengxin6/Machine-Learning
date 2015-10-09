@@ -14,5 +14,33 @@ for i=1:nIter
     mu=MaximizeMean(X,k,w);
     sigma=MaximizeCovariance(X,k,w,mu);
 end
-
 end
+
+function [w] = Expectation(X, k, t, mu, sigma)
+w=[];
+for i=1:k
+    w=[w,t(i)*mvnpdf(X,mu(i,:),sigma(:,:,i))];
+end
+w=w./repmat(sum(w,2),[1,k]);
+end
+
+function [sigma] = MaximizeCovariance(X, k, w, mu)
+sigma=[];
+for i=1:k
+    Nk=sum(w(:,i));
+    X_norm=X-repmat(mu(i,:),[size(X,1),1]);
+    sigma(:,:,i)=(repmat(w(:,i),[1,size(X,2)]).*X_norm)'*X_norm/Nk;
+end
+end
+
+function [t] = MaximizeMixtures(k, w)
+t=mean(w)';
+end
+function [mu] = MaximizeMean(X, k, w)
+mu=[];
+for i=1:k
+    Nk=sum(w(:,i));
+    mu=[mu;sum(X.*repmat(w(:,i),[1,size(X,2)]))/Nk];
+end
+end
+
